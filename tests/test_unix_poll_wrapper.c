@@ -9,7 +9,8 @@
 
 int main(void) {
     int sv[2] = {-1, -1};
-    pw_loop loop;
+    pw_loop loop = {0};
+    pw_loop tiny = {0};
     char ch = 'x';
     int n;
 
@@ -37,13 +38,39 @@ int main(void) {
         close(sv[1]);
         return 1;
     }
-    if (pw_add(&loop, sv[0], POLLIN) == 0) {
+    errno = 0;
+    if (pw_add(&loop, sv[0], POLLIN) == 0 || errno != EEXIST) {
         fprintf(stderr, "duplicate pw_add should fail\n");
         pw_free(&loop);
         close(sv[0]);
         close(sv[1]);
         return 1;
     }
+    if (pw_init(&tiny, 1) != 0) {
+        perror("pw_init tiny");
+        pw_free(&loop);
+        close(sv[0]);
+        close(sv[1]);
+        return 1;
+    }
+    if (pw_add(&tiny, sv[0], POLLIN) != 0) {
+        perror("pw_add tiny");
+        pw_free(&tiny);
+        pw_free(&loop);
+        close(sv[0]);
+        close(sv[1]);
+        return 1;
+    }
+    errno = 0;
+    if (pw_add(&tiny, sv[1], POLLIN) == 0 || errno != ENOSPC) {
+        fprintf(stderr, "pw_add should fail when loop is full\n");
+        pw_free(&tiny);
+        pw_free(&loop);
+        close(sv[0]);
+        close(sv[1]);
+        return 1;
+    }
+    pw_free(&tiny);
     if (write(sv[1], &ch, sizeof(ch)) != (ssize_t)sizeof(ch)) {
         perror("write");
         pw_free(&loop);
@@ -99,14 +126,16 @@ int main(void) {
         close(sv[1]);
         return 1;
     }
-    if (pw_del(&loop, sv[0]) == 0) {
+    errno = 0;
+    if (pw_del(&loop, sv[0]) == 0 || errno != ENOENT) {
         fprintf(stderr, "deleting missing fd should fail\n");
         pw_free(&loop);
         close(sv[0]);
         close(sv[1]);
         return 1;
     }
-    if (pw_mod(&loop, sv[0], POLLIN) == 0) {
+    errno = 0;
+    if (pw_mod(&loop, sv[0], POLLIN) == 0 || errno != ENOENT) {
         fprintf(stderr, "modifying missing fd should fail\n");
         pw_free(&loop);
         close(sv[0]);

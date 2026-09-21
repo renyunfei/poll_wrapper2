@@ -15,7 +15,14 @@ static int pw_find(const pw_loop *loop, int fd) {
 }
 
 int pw_init(pw_loop *loop, nfds_t cap) {
-    if (!loop || cap == 0) {
+    if (!loop) {
+        errno = EINVAL;
+        return -1;
+    }
+    loop->fds = NULL;
+    loop->len = 0;
+    loop->cap = 0;
+    if (cap == 0) {
         errno = EINVAL;
         return -1;
     }
@@ -23,7 +30,6 @@ int pw_init(pw_loop *loop, nfds_t cap) {
     if (!loop->fds) {
         return -1;
     }
-    loop->len = 0;
     loop->cap = cap;
     return 0;
 }
