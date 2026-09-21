@@ -104,6 +104,13 @@ int main(void) {
         close(sv[1]);
         return 1;
     }
+    if (pw_mod(&loop, sv[0], POLLIN) == 0) {
+        fprintf(stderr, "modifying missing fd should fail\n");
+        pw_free(&loop);
+        close(sv[0]);
+        close(sv[1]);
+        return 1;
+    }
     if (pw_wait(&loop, -2) != -1) {
         fprintf(stderr, "invalid timeout should fail\n");
         pw_free(&loop);

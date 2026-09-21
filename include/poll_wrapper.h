@@ -14,16 +14,16 @@ int pw_init(pw_loop *loop, nfds_t cap);
 /* Release resources owned by loop. Safe to call multiple times. */
 void pw_free(pw_loop *loop);
 
-/* Add fd with interest events. Fails if full or fd already exists. */
+/* Add fd with interest events. Fails if full or fd already exists (fd must be unique). */
 int pw_add(pw_loop *loop, int fd, short events);
 /* Update interest events for an existing fd. */
 int pw_mod(pw_loop *loop, int fd, short events);
-/* Remove an existing fd from the loop. */
+/* Remove an existing fd from the loop (compacts by swapping last entry). */
 int pw_del(pw_loop *loop, int fd);
 
 /* Call poll(); timeout_ms must be -1 or >=0. Returns poll() result. */
 int pw_wait(pw_loop *loop, int timeout_ms);
-/* Get revents for fd after pw_wait; returns 0 if fd not found/invalid loop. */
+/* Get revents by fd after pw_wait; returns 0 if fd not found/invalid loop. */
 short pw_revents(const pw_loop *loop, int fd);
 
 #endif
