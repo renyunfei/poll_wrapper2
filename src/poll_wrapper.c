@@ -26,7 +26,7 @@ int pw_init(pw_loop *loop, nfds_t cap) {
         errno = EINVAL;
         return -1;
     }
-    loop->fds = (struct pollfd *)calloc(cap, sizeof(struct pollfd));
+    loop->fds = calloc(cap, sizeof(struct pollfd));
     if (!loop->fds) {
         return -1;
     }
