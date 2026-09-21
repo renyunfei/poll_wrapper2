@@ -1,6 +1,7 @@
 #include "poll_wrapper.h"
 
 #include <errno.h>
+#include <poll.h>
 #include <stdlib.h>
 
 static int pw_find(const pw_loop *loop, int fd) {
