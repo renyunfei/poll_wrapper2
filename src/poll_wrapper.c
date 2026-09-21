@@ -58,6 +58,10 @@ int pw_add(pw_loop *loop, int fd, short events) {
 }
 
 int pw_mod(pw_loop *loop, int fd, short events) {
+    if (!loop || !loop->fds || fd < 0) {
+        errno = EINVAL;
+        return -1;
+    }
     int i = pw_find(loop, fd);
     if (i < 0) {
         errno = ENOENT;
@@ -69,6 +73,10 @@ int pw_mod(pw_loop *loop, int fd, short events) {
 }
 
 int pw_del(pw_loop *loop, int fd) {
+    if (!loop || !loop->fds || fd < 0) {
+        errno = EINVAL;
+        return -1;
+    }
     int i = pw_find(loop, fd);
     if (i < 0) {
         errno = ENOENT;
@@ -91,6 +99,9 @@ int pw_wait(pw_loop *loop, int timeout_ms) {
 }
 
 short pw_revents(const pw_loop *loop, int fd) {
+    if (!loop || !loop->fds || fd < 0) {
+        return 0;
+    }
     int i = pw_find(loop, fd);
     if (i < 0) {
         return 0;
