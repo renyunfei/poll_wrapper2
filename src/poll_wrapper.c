@@ -95,6 +95,10 @@ int pw_wait(pw_loop *loop, int timeout_ms) {
         errno = EINVAL;
         return -1;
     }
+    if (timeout_ms < -1) {
+        errno = EINVAL;
+        return -1;
+    }
     return poll(loop->fds, loop->len, timeout_ms);
 }
 

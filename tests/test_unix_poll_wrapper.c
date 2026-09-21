@@ -12,6 +12,12 @@ int main(void) {
     char ch = 'x';
     int n;
 
+    if (pw_init(&loop, 0) == 0) {
+        fprintf(stderr, "pw_init should fail when cap is 0\n");
+        pw_free(&loop);
+        return 1;
+    }
+
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) != 0) {
         perror("socketpair");
         return 1;
@@ -24,6 +30,13 @@ int main(void) {
     }
     if (pw_add(&loop, sv[0], POLLIN) != 0) {
         perror("pw_add");
+        pw_free(&loop);
+        close(sv[0]);
+        close(sv[1]);
+        return 1;
+    }
+    if (pw_add(&loop, sv[0], POLLIN) == 0) {
+        fprintf(stderr, "duplicate pw_add should fail\n");
         pw_free(&loop);
         close(sv[0]);
         close(sv[1]);
@@ -79,6 +92,20 @@ int main(void) {
 
     if (pw_del(&loop, sv[0]) != 0) {
         perror("pw_del");
+        pw_free(&loop);
+        close(sv[0]);
+        close(sv[1]);
+        return 1;
+    }
+    if (pw_del(&loop, sv[0]) == 0) {
+        fprintf(stderr, "deleting missing fd should fail\n");
+        pw_free(&loop);
+        close(sv[0]);
+        close(sv[1]);
+        return 1;
+    }
+    if (pw_wait(&loop, -2) != -1) {
+        fprintf(stderr, "invalid timeout should fail\n");
         pw_free(&loop);
         close(sv[0]);
         close(sv[1]);
