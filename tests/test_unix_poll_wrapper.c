@@ -1,5 +1,6 @@
 #include "poll_wrapper.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -12,7 +13,8 @@ int main(void) {
     char ch = 'x';
     int n;
 
-    if (pw_init(&loop, 0) == 0) {
+    errno = 0;
+    if (pw_init(&loop, 0) == 0 || errno != EINVAL) {
         fprintf(stderr, "pw_init should fail when cap is 0\n");
         pw_free(&loop);
         return 1;
@@ -111,7 +113,8 @@ int main(void) {
         close(sv[1]);
         return 1;
     }
-    if (pw_wait(&loop, -2) != -1) {
+    errno = 0;
+    if (pw_wait(&loop, -2) != -1 || errno != EINVAL) {
         fprintf(stderr, "invalid timeout should fail\n");
         pw_free(&loop);
         close(sv[0]);
